@@ -1,227 +1,277 @@
 {% extends "base.html" %} {% block title %}{{ name }}{% endblock %} {% block
 toolbar %}
-<a href="/@pongo/{{ name }}" class="button round">{{ name }}</a>
+<button data-dialog="query_builder_dialog" class="round">
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-database-zap"
+        aria-label="Database zap symbol"
+    >
+        <ellipse cx="12" cy="5" rx="9" ry="3" />
+        <path d="M3 5V19A9 3 0 0 0 15 21.84" />
+        <path d="M21 5V8" />
+        <path d="M21 12L18 17H22L19 22" />
+        <path d="M3 12A9 3 0 0 0 14.59 14.87" />
+    </svg>
+
+    Edit Query
+</button>
 {% endblock %} {% block toolbar_right %}
 <b>{{ me.user.username }}</b>
 {% endblock %} {% block content %}
-<main class="flex flex-col gap-2">
-    <div class="card w-full flex flex-col gap-2 round">
-        <b>Query</b>
+<style>
+    body {
+        overflow: hidden;
+        height: 100dvh;
+    }
+</style>
 
-        <form
-            class="flex gap-2 card secondary round flex-col md:flex-row"
-            id="fetch_form"
-        >
-            <input name="query" id="query" type="text" required />
+<main></main>
 
-            <div class="flex gap-2">
-                <select name="mode" id="mode" required class="w-max">
-                    <!-- these correspond with the api route -->
-                    <option value="fetch">Fetch All</option>
-                    <option value="execute">Execute</option>
-                </select>
+<div class="w-full h-screen block overflow-auto">
+    <table id="table"></table>
+</div>
 
-                <button class="round green">Submit</button>
-            </div>
-        </form>
-    </div>
+<!-- ... -->
+<dialog id="query_builder_dialog" class="animate-fade-in">
+    <div style="width: 80ch; max-width: 100%" class="p-4">
+        <div class="flex flex-col gap-2">
+            <div class="card w-full flex flex-col gap-2 round">
+                <b>Query</b>
 
-    <div class="card w-full flex flex-col gap-2 round">
-        <b>Extra Actions</b>
-
-        <div class="flex gap-2 card secondary round flex-wrap">
-            <button
-                onclick="document.getElementById('update_builder_dialog').showModal();"
-                class="round blue"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-wrench"
-                    aria-label="Wrench symbol"
+                <form
+                    class="flex gap-2 card secondary round flex-col md:flex-row"
+                    id="fetch_form"
                 >
-                    <path
-                        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
-                    />
-                </svg>
+                    <input name="query" id="query" type="text" required />
 
-                Update Builder
-            </button>
+                    <div class="flex gap-2">
+                        <select name="mode" id="mode" required class="w-max">
+                            <!-- these correspond with the api route -->
+                            <option value="fetch">Fetch All</option>
+                            <option value="execute">Execute</option>
+                        </select>
 
-            <button
-                onclick="document.getElementById('add_to_query_dialog').showModal();"
-                class="round blue"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-plus"
-                    aria-label="Plus symbol"
-                >
-                    <path d="M5 12h14" />
-                    <path d="M12 5v14" />
-                </svg>
-
-                Add Specifier
-            </button>
-        </div>
-    </div>
-
-    <!-- ... -->
-    <dialog id="add_to_query_dialog" class="animate-fade-in">
-        <div style="width: 25rem; max-width: 100%" class="p-4">
-            <div class="flex gap-2 flex-col">
-                <details>
-                    <summary>Where</summary>
-
-                    <form
-                        class="card secondary more_padding w-full round flex flex-col gap-2"
-                        onsubmit="add_to_query_eq('WHERE', event)"
-                    >
-                        <input
-                            type="text"
-                            name="selector"
-                            placeholder="selector"
-                            required
-                        />
-
-                        <i>equals</i>
-
-                        <input
-                            type="text"
-                            name="match"
-                            placeholder="value"
-                            required
-                        />
-
-                        <hr class="my-2" />
-                        <button class="green w-full">Add</button>
-                    </form>
-                </details>
-
-                <details>
-                    <summary>!Where</summary>
-
-                    <form
-                        class="card secondary more_padding w-full round flex flex-col gap-2"
-                        onsubmit="add_to_query_neq('WHERE', event)"
-                    >
-                        <input
-                            type="text"
-                            name="selector"
-                            placeholder="selector"
-                            required
-                        />
-
-                        <i>DOES NOT equal</i>
-
-                        <input
-                            type="text"
-                            name="match"
-                            placeholder="value"
-                            required
-                        />
-
-                        <hr class="my-2" />
-                        <button class="green w-full">Add</button>
-                    </form>
-                </details>
-
-                <details>
-                    <summary>Limit</summary>
-
-                    <form
-                        class="card secondary more_padding w-full round flex flex-col gap-2"
-                        onsubmit="add_to_query('LIMIT', event)"
-                    >
-                        <input
-                            type="text"
-                            name="value"
-                            placeholder="value"
-                            required
-                        />
-
-                        <hr class="my-2" />
-                        <button class="green w-full">Add</button>
-                    </form>
-                </details>
-
-                <details>
-                    <summary>Offset</summary>
-
-                    <form
-                        class="card secondary more_padding w-full round flex flex-col gap-2"
-                        onsubmit="add_to_query('OFFSET', event)"
-                    >
-                        <input
-                            type="text"
-                            name="value"
-                            placeholder="value"
-                            required
-                        />
-
-                        <hr class="my-2" />
-                        <button class="green w-full">Add</button>
-                    </form>
-                </details>
-            </div>
-
-            <hr class="my-4" />
-
-            <div class="w-full flex justify-end gap-2">
-                <a
-                    class="button round red"
-                    href="javascript:document.getElementById('add_to_query_dialog').close();"
-                >
-                    Close
-                </a>
-            </div>
-        </div>
-    </dialog>
-
-    <dialog id="update_builder_dialog" class="animate-fade-in">
-        <div style="width: 25rem; max-width: 100%" class="p-4">
-            <div class="flex gap-2 flex-col">
-                <form onsubmit="update_query(event)">
-                    <div class="flex gap-2 flex-col" id="cols"></div>
-
-                    <hr class="my-2" />
-                    <div class="flex gap-2 flex-col" id="col_vals"></div>
-
-                    <hr class="my-2" />
-                    <button class="green w-full">Save Query</button>
+                        <button class="round green">Submit</button>
+                    </div>
                 </form>
             </div>
 
-            <hr class="my-4" />
+            <div class="card w-full flex flex-col gap-2 round">
+                <b>Extra Actions</b>
 
-            <div class="w-full flex justify-end gap-2">
-                <a
-                    class="button round red"
-                    href="javascript:document.getElementById('update_builder_dialog').close();"
+                <div
+                    class="flex gap-2 items-center card secondary round flex-wrap"
                 >
-                    Close
-                </a>
+                    <button
+                        data-dialog="update_builder_dialog"
+                        class="round blue w-full md:w-max"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-wrench"
+                            aria-label="Wrench symbol"
+                        >
+                            <path
+                                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+                            />
+                        </svg>
+
+                        Update Builder
+                    </button>
+
+                    <button
+                        onclick="document.getElementById('add_to_query_dialog').showModal();"
+                        class="round blue w-full md:w-max"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-plus"
+                            aria-label="Plus symbol"
+                        >
+                            <path d="M5 12h14" />
+                            <path d="M12 5v14" />
+                        </svg>
+
+                        Add Specifier
+                    </button>
+                </div>
             </div>
         </div>
-    </dialog>
-</main>
 
-<table id="table"></table>
+        <hr class="my-4" />
+
+        <div class="w-full flex justify-end gap-2">
+            <a
+                class="button round red"
+                href="javascript:document.getElementById('query_builder_dialog').close();"
+            >
+                Close
+            </a>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="add_to_query_dialog" class="animate-fade-in">
+    <div style="width: 25rem; max-width: 100%" class="p-4">
+        <div class="flex gap-2 flex-col">
+            <details>
+                <summary>Where</summary>
+
+                <form
+                    class="card secondary more_padding w-full round flex flex-col gap-2"
+                    onsubmit="add_to_query_eq('WHERE', event)"
+                >
+                    <input
+                        type="text"
+                        name="selector"
+                        placeholder="selector"
+                        required
+                    />
+
+                    <i>equals</i>
+
+                    <input
+                        type="text"
+                        name="match"
+                        placeholder="value"
+                        required
+                    />
+
+                    <hr class="my-2" />
+                    <button class="green w-full">Add</button>
+                </form>
+            </details>
+
+            <details>
+                <summary>!Where</summary>
+
+                <form
+                    class="card secondary more_padding w-full round flex flex-col gap-2"
+                    onsubmit="add_to_query_neq('WHERE', event)"
+                >
+                    <input
+                        type="text"
+                        name="selector"
+                        placeholder="selector"
+                        required
+                    />
+
+                    <i>DOES NOT equal</i>
+
+                    <input
+                        type="text"
+                        name="match"
+                        placeholder="value"
+                        required
+                    />
+
+                    <hr class="my-2" />
+                    <button class="green w-full">Add</button>
+                </form>
+            </details>
+
+            <details>
+                <summary>Limit</summary>
+
+                <form
+                    class="card secondary more_padding w-full round flex flex-col gap-2"
+                    onsubmit="add_to_query('LIMIT', event)"
+                >
+                    <input
+                        type="text"
+                        name="value"
+                        placeholder="value"
+                        required
+                    />
+
+                    <hr class="my-2" />
+                    <button class="green w-full">Add</button>
+                </form>
+            </details>
+
+            <details>
+                <summary>Offset</summary>
+
+                <form
+                    class="card secondary more_padding w-full round flex flex-col gap-2"
+                    onsubmit="add_to_query('OFFSET', event)"
+                >
+                    <input
+                        type="text"
+                        name="value"
+                        placeholder="value"
+                        required
+                    />
+
+                    <hr class="my-2" />
+                    <button class="green w-full">Add</button>
+                </form>
+            </details>
+        </div>
+
+        <hr class="my-4" />
+
+        <div class="w-full flex justify-end gap-2">
+            <a
+                class="button round red"
+                href="javascript:document.getElementById('add_to_query_dialog').close();"
+            >
+                Close
+            </a>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="update_builder_dialog" class="animate-fade-in">
+    <div style="width: 25rem; max-width: 100%" class="p-4">
+        <div class="flex gap-2 flex-col">
+            <form onsubmit="update_query(event)">
+                <div class="flex gap-2 flex-col" id="cols"></div>
+
+                <hr class="my-2" />
+                <div class="flex gap-2 flex-col" id="col_vals"></div>
+
+                <hr class="my-2" />
+                <button class="green w-full">Save Query</button>
+            </form>
+        </div>
+
+        <hr class="my-4" />
+
+        <div class="w-full flex justify-end gap-2">
+            <a
+                class="button round red"
+                href="javascript:document.getElementById('update_builder_dialog').close();"
+            >
+                Close
+            </a>
+        </div>
+    </div>
+</dialog>
 
 <script>
     use("table_view", (table_view) => {
