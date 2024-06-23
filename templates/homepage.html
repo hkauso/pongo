@@ -1,0 +1,28 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block
+toolbar_right %}
+<b>{{ me.user.username }}</b>
+{% endblock %} {% block content %}
+<main>
+    <div class="card w-full flex flex-col gap-2 round">
+        <b>Manage Table</b>
+
+        <form class="flex gap-2 card secondary round">
+            <input
+                name="table_name"
+                id="table_name"
+                placeholder="Table Name"
+                type="text"
+            />
+
+            <button>Submit</button>
+        </form>
+    </div>
+</main>
+
+<script>
+    document.querySelector("form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        window.location.href = `/@pongo/${e.target.table_name.value}`;
+    });
+</script>
+{% call super() %} {% endblock %}
