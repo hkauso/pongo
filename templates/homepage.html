@@ -2,11 +2,11 @@
 toolbar_right %}
 <b>{{ me.user.username }}</b>
 {% endblock %} {% block content %}
-<main>
+<main class="flex flex-col gap-2">
     <div class="card w-full flex flex-col gap-2 round">
         <b>Manage Table</b>
 
-        <form class="flex gap-2 card secondary round">
+        <form class="flex gap-2 card secondary round" id="navigate">
             <input
                 name="table_name"
                 id="table_name"
@@ -14,15 +14,154 @@ toolbar_right %}
                 type="text"
             />
 
-            <button>Submit</button>
+            <button class="round">Submit</button>
+        </form>
+    </div>
+
+    <hr class="my-2" />
+
+    <div class="card w-full flex flex-col gap-2 round">
+        <b>Redis: Get Key</b>
+        <form class="flex gap-2 card secondary round" id="get_key">
+            <input name="key" id="key" placeholder="Key" type="text" />
+            <button class="blue round">Submit</button>
+        </form>
+    </div>
+
+    <div class="card w-full flex flex-col gap-2 round">
+        <b>Redis: Insert Key</b>
+        <form class="flex gap-2 card secondary round" id="insert_key">
+            <input name="key" id="key1" placeholder="Key" type="text" />
+            <input name="value" id="value" placeholder="Value" type="text" />
+
+            <button class="green round">Submit</button>
+        </form>
+    </div>
+
+    <div class="card w-full flex flex-col gap-2 round">
+        <b>Redis: Delete Key</b>
+        <form class="flex gap-2 card secondary round" id="delete_key">
+            <input name="key" id="key2" placeholder="Key" type="text" />
+            <button class="red round">Submit</button>
         </form>
     </div>
 </main>
 
 <script>
-    document.querySelector("form").addEventListener("submit", (e) => {
+    document.getElementById("navigate").addEventListener("submit", (e) => {
         e.preventDefault();
         window.location.href = `/@pongo/${e.target.table_name.value}`;
     });
+
+    // redis forms
+    document.getElementById("get_key").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // send request
+        const res = await (
+            await fetch("/@pongo/api/redis/get", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    key: e.target.key.value,
+                }),
+            })
+        ).json();
+
+        if (res.success === false) {
+            trigger("app:gen_secret", [
+                "note-error",
+                "Invalid Request",
+                res.message,
+            ]);
+
+            return;
+        }
+
+        trigger("app:gen_secret", [
+            "note-note",
+            "Request Completed",
+            res.payload,
+        ]);
+
+        e.target.reset();
+    });
+
+    document
+        .getElementById("delete_key")
+        .addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // send request
+            const res = await (
+                await fetch("/@pongo/api/redis/delete", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        key: e.target.key.value,
+                    }),
+                })
+            ).json();
+
+            if (res.success === false) {
+                trigger("app:gen_secret", [
+                    "note-error",
+                    "Invalid Request",
+                    res.message,
+                ]);
+
+                return;
+            }
+
+            trigger("app:gen_secret", [
+                "note-note",
+                "Request Completed",
+                res.payload,
+            ]);
+
+            e.target.reset();
+        });
+
+    document
+        .getElementById("insert_key")
+        .addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // send request
+            const res = await (
+                await fetch("/@pongo/api/redis/insert", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        key: e.target.key.value,
+                        value: e.target.value.value,
+                    }),
+                })
+            ).json();
+
+            if (res.success === false) {
+                trigger("app:gen_secret", [
+                    "note-error",
+                    "Invalid Request",
+                    res.message,
+                ]);
+
+                return;
+            }
+
+            trigger("app:gen_secret", [
+                "note-note",
+                "Request Completed",
+                res.payload,
+            ]);
+
+            e.target.reset();
+        });
 </script>
 {% call super() %} {% endblock %}

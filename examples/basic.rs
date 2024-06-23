@@ -14,7 +14,7 @@ async fn main() {
         Err(_) => 8080,
     };
 
-    set_var("STATIC_DIR", "/static");
+    set_var("PO_STATIC_DIR", "/static");
 
     // create database
     let database = Database::new(Database::env_options(), ServerOptions::truthy()).await;
