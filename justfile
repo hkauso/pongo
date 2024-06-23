@@ -1,3 +1,6 @@
+publish:
+    cargo publish --no-verify --allow-dirty
+
 test:
     just style
     cargo run --example basic
