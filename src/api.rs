@@ -382,7 +382,7 @@ pub async fn callback_request(Query(params): Query<CallbackQueryProps>) -> impl 
             ),
         ],
         "<head>
-            <meta http-equiv=\"Refresh\" content=\"0; URL=/@pongo\" />
+            <meta http-equiv=\"Refresh\" content=\"0; URL=/\" />
         </head>"
     )
 }

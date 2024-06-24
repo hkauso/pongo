@@ -31,7 +31,7 @@ let app = Router::new()
   .fallback(pongo::api::not_found);
 ```
 
-Pongo should be nested under the `/@pongo` path for the dashboard to work properly.
+The location that Pongo is nested under should also be reflected in the `PO_NESTED` variable so pages can be linked correctly on the dashboard.
 
 You can configure the location where Pongo will send its static file requests to through the `PO_STATIC_DIR` environment variable. This **DOES NOT** set the location that the local directory is served from, that is up to you!
 

@@ -50,7 +50,7 @@ toolbar_right %}
 <script>
     document.getElementById("navigate").addEventListener("submit", (e) => {
         e.preventDefault();
-        window.location.href = `/@pongo/${e.target.table_name.value}`;
+        window.location.href = `/${globalThis._app_base.nested}/${e.target.table_name.value}`;
     });
 
     // redis forms
@@ -59,7 +59,7 @@ toolbar_right %}
 
         // send request
         const res = await (
-            await fetch("/@pongo/api/redis/get", {
+            await fetch(`/${globalThis._app_base.nested}/api/redis/get`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -96,15 +96,18 @@ toolbar_right %}
 
             // send request
             const res = await (
-                await fetch("/@pongo/api/redis/delete", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
+                await fetch(
+                    `/${globalThis._app_base.nested}/api/redis/delete`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            key: e.target.key.value,
+                        }),
                     },
-                    body: JSON.stringify({
-                        key: e.target.key.value,
-                    }),
-                })
+                )
             ).json();
 
             if (res.success === false) {
@@ -133,16 +136,19 @@ toolbar_right %}
 
             // send request
             const res = await (
-                await fetch("/@pongo/api/redis/insert", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
+                await fetch(
+                    `/${globalThis._app_base.nested}/api/redis/insert`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            key: e.target.key.value,
+                            value: e.target.value.value,
+                        }),
                     },
-                    body: JSON.stringify({
-                        key: e.target.key.value,
-                        value: e.target.value.value,
-                    }),
-                })
+                )
             ).json();
 
             if (res.success === false) {

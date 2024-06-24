@@ -91,7 +91,7 @@
         document.querySelectorAll('[data-wants-redirect="true"]'),
     )) {
         element.href = `${element.href}?callback=${encodeURIComponent(
-            `${window.location.origin}/@pongo/api/auth/callback`,
+            `${window.location.origin}/${globalThis._app_base.nested}/api/auth/callback`,
         )}`;
     }
 

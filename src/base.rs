@@ -11,6 +11,8 @@ pub struct BaseStore {
     pub guppy_root: String,
     /// `PO_STATIC_DIR` variable, where Pongo's static assets are located
     pub static_dir: String,
+    /// `PO_NESTED` variable, where Pongo is nested (relative to root)
+    pub nested: String,
 }
 
 impl BaseStore {
@@ -33,6 +35,10 @@ impl BaseStore {
                 Err(_) => {
                     panic!("No static dir has been provided! Pongo needs client files to function.")
                 }
+            },
+            nested: match env::var("PO_NESTED") {
+                Ok(s) => s,
+                Err(_) => String::from("/@pongo"),
             },
         }
     }

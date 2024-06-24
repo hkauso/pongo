@@ -15,6 +15,7 @@ async fn main() {
     };
 
     set_var("PO_STATIC_DIR", "/static");
+    set_var("PO_NESTED", "@pongo");
 
     // create database
     let database = Database::new(Database::env_options(), ServerOptions::truthy()).await;

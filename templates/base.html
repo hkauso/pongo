@@ -49,6 +49,7 @@
             globalThis._app_base = {
                 ns_store: {}, // global page functions
                 guppy_root: "{{ base.guppy_root }}",
+                nested: "{{ base.nested }}",
             };
         </script>
     </head>
@@ -59,7 +60,7 @@
         <!-- global menu -->
         <div class="link-list" style="display: none" id="upper:globalmenu">
             <div class="option w-full flex items-center gap-2 !justify-between">
-                <a href="/@pongo" style="color: inherit">
+                <a href="/{{ base.nested }}" style="color: inherit">
                     <b>{{ base.site_name }}</b>
                 </a>
 
@@ -164,7 +165,7 @@
                     login
                 </a>
                 {% else %}
-                <a href="/@pongo/api/auth/logout" class="button red">
+                <a href="/{{ base.nested }}/api/auth/logout" class="button red">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="18"

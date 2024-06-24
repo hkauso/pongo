@@ -18,7 +18,11 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
     $.ctx.style.animation = "fadein 0.05s ease-in-out 1 running";
     $.ctx.style.width = "15rem";
 
-    bind_to.addEventListener("contextmenu", (e) => {
+    window.addEventListener("contextmenu", (e) => {
+        if (e.target && e.target.nodeName === "INPUT") {
+            return;
+        }
+
         e.preventDefault();
         $.context_menu(e);
     });
@@ -38,11 +42,24 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
         document.getElementById("add_to_query_dialog").showModal();
     };
 
+    globalThis.set_match = (idx, col) => {
+        const value = $.payload[idx][col]; // get value from [row][col]
+        
+        for (const field of Array.from(
+            document.querySelectorAll('input[name="match"]'),
+        )) {
+            field.value = value;
+        }
+
+        document.getElementById("add_to_query_dialog").showModal();
+    };
+
     globalThis.add_to_query = (keyword, e) => {
         e.preventDefault();
         document.getElementById("query").value +=
             ` ${keyword.toUpperCase()} ${e.target.value.value}`;
         document.getElementById("add_to_query_dialog").close();
+        e.target.reset();
     };
 
     globalThis.add_to_query_eq = (keyword, e) => {
@@ -50,6 +67,7 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
         document.getElementById("query").value +=
             ` ${keyword.toUpperCase()} \"${e.target.selector.value.replaceAll('"', "'")}\" = '${e.target.match.value.replaceAll("'", '"')}'`;
         document.getElementById("add_to_query_dialog").close();
+        e.target.reset();
     };
 
     globalThis.add_to_query_neq = (keyword, e) => {
@@ -57,6 +75,7 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
         document.getElementById("query").value +=
             ` ${keyword.toUpperCase()} \"${e.target.selector.value.replaceAll('"', "'")}\" != '${e.target.match.value.replaceAll("'", '"')}'`;
         document.getElementById("add_to_query_dialog").close();
+        e.target.reset();
     };
 
     globalThis.update_query = (e) => {
@@ -151,15 +170,18 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
 
     // send request
     const res = await (
-        await fetch(`/@pongo/api/sql/${table_name}/${mode}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
+        await fetch(
+            `/${globalThis._app_base.nested}/api/sql/${table_name}/${mode}`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    query,
+                }),
             },
-            body: JSON.stringify({
-                query,
-            }),
-        })
+        )
     ).json();
 
     if (res.success === false) {
@@ -198,7 +220,7 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
 
     for (const column of columns) {
         // update table
-        head.innerHTML += `<th>${column}</th>`;
+        head.innerHTML += `<th data-col="${column}">${column}</th>`;
 
         // update #cols
         document.getElementById("cols").innerHTML +=
@@ -220,7 +242,7 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
     bind_to.innerHTML += '<tbody id="table_body"></tbody>';
 
     const body = document.getElementById("table_body");
-    for (const row of res.payload) {
+    for (const [i, row] of Object.entries(res.payload)) {
         let output = "";
 
         for (const column of columns) {
@@ -233,7 +255,7 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
                     .replaceAll(">", "&gt;")
                     .replace('"', "&quot;");
 
-                output += `<td data-col="${column}" style="white-space: wrap;">
+                output += `<td data-col="${column}" data-idx="${i}" style="white-space: wrap;">
                     <details class="small secondary w-max" style="white-space: wrap;">
                         <summary>
                             <span>Long Value (${value.length})</span>
@@ -243,12 +265,14 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
                     </details>`;
             } else {
                 // just show value
-                output += `<td data-col="${column}">${value}</td>`;
+                output += `<td data-col="${column}" data-idx="${i}">${value}</td>`;
             }
         }
 
         body.innerHTML += `<tr>${output}</tr>`;
     }
+
+    $.payload = res.payload;
 });
 
 function read_selected() {
@@ -306,11 +330,14 @@ table_view.define("context_menu", function ({ $ }, event) {
 
     // ...
     if (event.target) {
-        // column
-        if (event.target.getAttribute("data-col")) {
+        // button
+        if (
+            event.target.nodeName === "BUTTON" ||
+            event.target.nodeName === "A"
+        ) {
             $.ctx.innerHTML += `<button 
-                class="w-full round blue option small"
-                onclick="set_selector('${event.target.getAttribute("data-col")}')"
+                class="w-full round option small"
+                onclick="trigger('table_view:click_target')"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -322,15 +349,73 @@ table_view.define("context_menu", function ({ $ }, event) {
                     stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    class="lucide lucide-plus"
-                    aria-label="Plus symbol"
+                    class="lucide lucide-mouse-pointer-click"
+                    aria-label="Pointer click symbol"
                 >
-                    <path d="M5 12h14" />
-                    <path d="M12 5v14" />
+                    <path d="m9 9 5 12 1.8-5.2L21 14Z" />
+                    <path d="M7.2 2.2 8 5.1" />
+                    <path d="m5.1 8-2.9-.8" />
+                    <path d="M14 4.1 12 6" />
+                    <path d="m6 12-1.9 2" />
                 </svg>
-                        
-                Add Specifier
+                                
+                Activate
             </button>`;
+        }
+
+        // column
+        if (event.target.getAttribute("data-col")) {
+            if (event.target.getAttribute("data-idx")) {
+                // fill WITH value
+                $.ctx.innerHTML += `<button 
+                    class="w-full round blue option small"
+                    onclick="set_selector('${event.target.getAttribute("data-col")}');set_match(${event.target.getAttribute("data-idx")},'${event.target.getAttribute("data-col")}')"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-plus"
+                        aria-label="Plus symbol"
+                    >
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                    </svg>
+                        
+                    Add Specifier
+                </button>`;
+            } else {
+                // fill WITHOUT value
+                $.ctx.innerHTML += `<button 
+                    class="w-full round blue option small"
+                    onclick="set_selector('${event.target.getAttribute("data-col")}')"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-plus"
+                        aria-label="Plus symbol"
+                    >
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                    </svg>
+                        
+                    Add Specifier
+                </button>`;
+            }
         }
 
         // default options
@@ -362,7 +447,7 @@ table_view.define("context_menu", function ({ $ }, event) {
 
         $.ctx.innerHTML += `<button
             class="w-full round option small"
-            onclick="window.location.href = '/@pongo'"
+            onclick="window.location.href = '/${globalThis._app_base.nested}'"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -389,4 +474,8 @@ table_view.define("context_menu", function ({ $ }, event) {
 
 table_view.define("copy_selection", function (_) {
     window.navigator.clipboard.writeText(read_selected());
+});
+
+table_view.define("click_target", function ({ $ }) {
+    $.selected.click();
 });
