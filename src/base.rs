@@ -38,7 +38,7 @@ impl BaseStore {
             },
             nested: match env::var("PO_NESTED") {
                 Ok(s) => s,
-                Err(_) => String::from("/@pongo"),
+                Err(_) => String::from("@pongo"),
             },
         }
     }

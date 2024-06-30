@@ -23,7 +23,7 @@ crate-type = ["bin"]
 postgres = ["dorsal/postgres"]
 mysql = ["dorsal/mysql"]
 sqlite = ["dorsal/sqlite"]
-# default = ["dorsal/sqlite"] # for development
+default = ["dorsal/sqlite"] # for development
 
 [dependencies]
 axum = "0.7.5"
@@ -32,7 +32,7 @@ serde = { version = "1.0.203", features = ["derive"] }
 serde_json = "1.0.117"
 tokio = { version = "1.38.0", features = ["macros", "rt-multi-thread"] }
 tower-http = { version = "0.5.2", features = ["fs"] }
-dorsal = { version = "0.1.4", default-features = false }
+dorsal = { version = "0.1.7", default-features = false }
 dotenv = "0.15.0"
 axum-extra = { version = "0.9.3", features = ["cookie"] }
 askama = { version = "0.12.1", features = ["with-axum"] }

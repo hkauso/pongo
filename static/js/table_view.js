@@ -44,7 +44,7 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
 
     globalThis.set_match = (idx, col) => {
         const value = $.payload[idx][col]; // get value from [row][col]
-        
+
         for (const field of Array.from(
             document.querySelectorAll('input[name="match"]'),
         )) {
@@ -253,7 +253,7 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
                 const clean_value = value
                     .replaceAll("<", "&lt;")
                     .replaceAll(">", "&gt;")
-                    .replace('"', "&quot;");
+                    .replaceAll('"', "&quot;");
 
                 output += `<td data-col="${column}" data-idx="${i}" style="white-space: wrap;">
                     <details class="small secondary w-max" style="white-space: wrap;">
@@ -265,7 +265,10 @@ table_view.define("render", async function ({ $ }, bind_to, table_name) {
                     </details>`;
             } else {
                 // just show value
-                output += `<td data-col="${column}" data-idx="${i}">${value}</td>`;
+                output += `<td data-col="${column}" data-idx="${i}">${value
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll('"', "&quot;")}</td>`;
             }
         }
 

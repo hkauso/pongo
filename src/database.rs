@@ -49,7 +49,11 @@ impl Database {
 
         Self {
             base: base.clone(),
-            auth: dorsal::AuthDatabase::new(base).await,
+            auth: dorsal::AuthDatabase::new(
+                base,
+                dorsal::db::special::auth_db::DatabaseOptions::default(),
+            )
+            .await,
             config: server_options,
         }
     }
