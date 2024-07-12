@@ -4,7 +4,7 @@ description = "Intelligent Dorsal admin interface"
 authors = ["hkau"]
 license = "MIT"
 
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 
 documentation = "https://docs.rs/pongo"
@@ -23,7 +23,7 @@ crate-type = ["bin"]
 postgres = ["dorsal/postgres", "starstraw/postgres"]
 mysql = ["dorsal/mysql", "starstraw/mysql"]
 sqlite = ["dorsal/sqlite", "starstraw/sqlite"]
-# default = ["dorsal/sqlite", "starstraw/sqlite"] # for development
+default = ["dorsal/sqlite", "starstraw/sqlite"] # for development
 
 [dependencies]
 axum = "0.7.5"

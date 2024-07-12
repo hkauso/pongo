@@ -72,4 +72,114 @@
             }
         });
     });
+
+    self.define(
+        "init_god_mode",
+        function (_, target, grant_skill, revoke_skill, grant_title) {
+            grant_skill.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const res = await fetch(
+                    `${globalThis._app_base.starstraw}/api/spirit/${target}/grant`,
+                    {
+                        method: "POST",
+                        body: JSON.stringify({
+                            skill: [
+                                [e.target.type.value, e.target.name.value],
+                                parseFloat(e.target.level.value),
+                            ],
+                        }),
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    },
+                );
+
+                const json = await res.json();
+
+                if (json.success === false) {
+                    trigger("app:gen_secret", [
+                        "note-error",
+                        "Request Finished",
+                        json.message,
+                    ]);
+                } else {
+                    trigger("app:gen_secret", [
+                        "note-note",
+                        "Request Finished",
+                        json.message,
+                    ]);
+                }
+
+                document.getElementById("upper:god_mode").close();
+            });
+
+            revoke_skill.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const res = await fetch(
+                    `${globalThis._app_base.starstraw}/api/spirit/${target}/revoke`,
+                    {
+                        method: "POST",
+                        body: JSON.stringify({
+                            skill: e.target.name.value,
+                        }),
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    },
+                );
+
+                const json = await res.json();
+
+                if (json.success === false) {
+                    trigger("app:gen_secret", [
+                        "note-error",
+                        "Request Finished",
+                        json.message,
+                    ]);
+                } else {
+                    trigger("app:gen_secret", [
+                        "note-note",
+                        "Request Finished",
+                        json.message,
+                    ]);
+                }
+
+                document.getElementById("upper:god_mode").close();
+            });
+
+            grant_title.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const res = await fetch(
+                    `${globalThis._app_base.starstraw}/api/spirit/${target}/seed`,
+                    {
+                        method: "POST",
+                        body: JSON.stringify({
+                            title: e.target.name.value,
+                        }),
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    },
+                );
+
+                const json = await res.json();
+
+                if (json.success === false) {
+                    trigger("app:gen_secret", [
+                        "note-error",
+                        "Request Finished",
+                        json.message,
+                    ]);
+                } else {
+                    trigger("app:gen_secret", [
+                        "note-note",
+                        "Request Finished",
+                        json.message,
+                    ]);
+                }
+
+                document.getElementById("upper:god_mode").close();
+            });
+        },
+    );
 })();

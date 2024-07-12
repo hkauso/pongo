@@ -482,7 +482,7 @@ table tbody tr td {
 
 /* details */
 details {
-    @apply bg-neutral-200 dark:bg-neutral-800 p-2 rounded-sm;
+    @apply bg-neutral-200 dark:bg-neutral-800 rounded-sm;
     @apply hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors;
 }
 

@@ -1,0 +1,235 @@
+{% extends "bare_base.html" %} {% block title %}{{ profile.username }}{%
+endblock %} {% block toolbar_attrs %}style="position: fixed; top: 0; background:
+transparent;"{% endblock %} {% block content%}
+<div class="flex flex-col gap-2">
+    <!-- prettier-ignore -->
+    <div id="ignored-vars" class="hidden">
+        {% let skill_manager = starstraw::model::SkillManager(profile.skills.to_owned()) %}
+        {% let stats = skill_manager.get_stats() %}
+    </div>
+
+    <main class="small flex flex-col gap-2">
+        <h2 class="no-margin">{{ profile.username }}</h2>
+
+        <!-- skills -->
+        <details class="w-full" open>
+            <summary>Info</summary>
+            <div
+                class="card secondary more_padding round gap-4 flex-col w-full"
+            >
+                <!-- prettier-ignore -->
+                <ul>
+                    <li>
+                        Title: {{ crate::starstraw::serialize(stats.title).replace("\"", "") }}
+                    </li>
+
+                    <li>
+                        Power: {{ stats.power }}
+                    </li>
+                </ul>
+
+                <hr class="my-2" />
+
+                <!-- prettier-ignore -->
+                {% if !skill_manager.has_skill(starstraw::model::SkillName::Vanish) %}
+                <ul id="skills">
+                    {% for skill in skill_manager.0 %}
+                    <li>
+                        <!-- prettier-ignore -->
+                        <span>
+                            {{ crate::starstraw::serialize(skill.0.0).replace("\"", "") }}
+                            <b>
+                                {{ crate::starstraw::serialize(skill.0.1).replace("\"", "") }}
+                            </b>
+                        </span>
+
+                        <span class="opacity-75">({{ skill.1 }})</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <span class="opacity-75">
+                    Unable to read this user's skills.
+                </span>
+                {% endif %} {% if god_mode_allowed == true %}
+                <button
+                    data-dialog="upper:god_mode"
+                    class="round theme:primary"
+                >
+                    God Mode
+                </button>
+                {% endif %}
+            </div>
+        </details>
+
+        <!-- links -->
+        <div class="footernav w-full justify-center">
+            <div class="item">
+                <a href="/">Homepage</a>
+            </div>
+
+            <div class="item">
+                <a data-dialog="upper:settings" href="#dialog:settings">
+                    Config
+                </a>
+            </div>
+
+            <div class="item flex items-center">
+                <a
+                    id="theme_button"
+                    href="javascript:trigger('app:toggle_theme')"
+                    title="Toggle Theme"
+                    style="color: var(--text-color-faded)"
+                >
+                    <div id="theme_icon_sun" class="align-center">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-sun"
+                        >
+                            <circle cx="12" cy="12" r="4" />
+                            <path d="M12 2v2" />
+                            <path d="M12 20v2" />
+                            <path d="m4.93 4.93 1.41 1.41" />
+                            <path d="m17.66 17.66 1.41 1.41" />
+                            <path d="M2 12h2" />
+                            <path d="M20 12h2" />
+                            <path d="m6.34 17.66-1.41 1.41" />
+                            <path d="m19.07 4.93-1.41 1.41" />
+                        </svg>
+                    </div>
+
+                    <div id="theme_icon_moon" class="align-center">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-moon"
+                        >
+                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                        </svg>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        {% if god_mode_allowed == true %}
+        <dialog id="upper:god_mode" class="animate-fade-in">
+            <div style="width: 25rem; max-width: 100%" class="p-4">
+                <div class="flex flex-col gap-2">
+                    <details>
+                        <summary>Grant Skill</summary>
+
+                        <form
+                            class="card secondary more_padding w-full round flex flex-col gap-2"
+                            id="grant_skill"
+                        >
+                            <input
+                                type="text"
+                                name="type"
+                                placeholder="Type"
+                                required
+                            />
+
+                            <input
+                                type="text"
+                                name="name"
+                                placeholder="Name"
+                                required
+                            />
+
+                            <input
+                                type="number"
+                                name="level"
+                                placeholder="Level"
+                                value="1"
+                                required
+                            />
+
+                            <hr class="my-2" />
+                            <button class="green w-full">Grant</button>
+                        </form>
+                    </details>
+
+                    <details>
+                        <summary>Revoke Skill</summary>
+
+                        <form
+                            class="card secondary more_padding w-full round flex flex-col gap-2"
+                            id="revoke_skill"
+                        >
+                            <input
+                                type="text"
+                                name="name"
+                                placeholder="Name"
+                                required
+                            />
+
+                            <hr class="my-2" />
+                            <button class="red w-full">Revoke</button>
+                        </form>
+                    </details>
+
+                    <details>
+                        <summary>Grant Title</summary>
+
+                        <form
+                            class="card secondary more_padding w-full round flex flex-col gap-2"
+                            id="grant_title"
+                        >
+                            <input
+                                type="text"
+                                name="name"
+                                placeholder="Name"
+                                required
+                            />
+
+                            <hr class="my-2" />
+                            <button class="blue w-full">Set Title</button>
+                        </form>
+                    </details>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="w-full flex justify-end gap-2">
+                    <a
+                        class="button round red"
+                        href="javascript:document.getElementById('query_builder_dialog').close();"
+                    >
+                        Close
+                    </a>
+                </div>
+            </div>
+        </dialog>
+        {% endif %}
+
+        <script>
+            use("starstraw", (mod) => {
+                // mod.render_profile();
+                if ("{{ god_mode_allowed }}" === "true") {
+                    mod.init_god_mode(
+                        "{{ profile.username }}",
+                        document.getElementById("grant_skill"),
+                        document.getElementById("revoke_skill"),
+                        document.getElementById("grant_title"),
+                    );
+                }
+            });
+        </script>
+    </main>
+</div>
+{% call super() %} {% endblock %}

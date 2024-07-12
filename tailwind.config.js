@@ -5,8 +5,8 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                brand: "rgb(16 185 129)",
-                "brand-low": "rgb(16 185 129)",
+                brand: "rgb(16, 185, 129)",
+                "brand-low": "rgb(14, 158, 110)",
             },
             animation: {
                 "fade-in": "fadein 0.25s ease-in-out 1 running",
