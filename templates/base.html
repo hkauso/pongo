@@ -48,7 +48,7 @@
             globalThis.ns_config = { root: "{{ base.static_dir }}/js/" };
             globalThis._app_base = {
                 ns_store: {}, // global page functions
-                guppy_root: "{{ base.guppy_root }}",
+                starstraw: "{{ base.starstraw }}",
                 nested: "{{ base.nested }}",
             };
         </script>
@@ -119,7 +119,7 @@
 
                 {% if auth_state == false %}
                 <a
-                    href="{{ base.guppy_root }}/flow/auth/register"
+                    href="{{ base.starstraw }}/spirit/register"
                     class="button green"
                     data-wants-redirect="true"
                 >
@@ -142,7 +142,7 @@
                 </a>
 
                 <a
-                    href="{{ base.guppy_root }}/flow/auth/login"
+                    href="{{ base.starstraw }}/spirit/login"
                     class="button green"
                     data-wants-redirect="true"
                 >

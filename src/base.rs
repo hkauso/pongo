@@ -7,8 +7,8 @@ pub struct BaseStore {
     pub site_name: String,
     /// `PO_BODY_EMBED` variable, HTML that is embedded on every page
     pub body_embed: String,
-    /// `PO_GUPPY_ROOT` variable, for guppy auth (required)
-    pub guppy_root: String,
+    /// `PO_STARSTRAW` variable, for starstraw auth api nesting location (required)
+    pub starstraw: String,
     /// `PO_STATIC_DIR` variable, where Pongo's static assets are located
     pub static_dir: String,
     /// `PO_NESTED` variable, where Pongo is nested (relative to root)
@@ -26,9 +26,9 @@ impl BaseStore {
                 Ok(s) => s,
                 Err(_) => String::new(),
             },
-            guppy_root: match env::var("PO_GUPPY_ROOT") {
+            starstraw: match env::var("PO_STARSTRAW") {
                 Ok(s) => s,
-                Err(_) => panic!("Guppy is required to use Pongo."),
+                Err(_) => panic!("Starstraw is required to use Pongo."),
             },
             static_dir: match env::var("PO_STATIC_DIR") {
                 Ok(s) => s,

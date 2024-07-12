@@ -1,0 +1,115 @@
+{% extends "bare_base.html" %} {% block title %}Login{% endblock %} {% block
+toolbar_attrs %}style="position: fixed; top: 0; background: transparent;"{%
+endblock %} {% block content%}
+<style>
+    #_page {
+        display: grid;
+        place-items: center;
+        height: 100dvh;
+        max-height: 100dvh;
+        width: 100dvw;
+    }
+</style>
+
+<div class="flex flex-col gap-2">
+    <main class="small flex flex-col items-center gap-2">
+        <div
+            id="success"
+            class="w-full card round flex flex-col gap-2"
+            style="display: none; width: 100%"
+        ></div>
+        <div
+            id="error"
+            class="mdnote note-error full"
+            style="display: none"
+        ></div>
+
+        <div
+            class="card round gap-4 flex-col md:flex-row"
+            style="
+                width: 50rem;
+                max-width: 100dvw;
+                display: flex;
+                padding: 2rem;
+            "
+            id="forms"
+        >
+            <div class="w-full flex flex-col gap-4">
+                <h2 class="no-margin">Welcome back!</h2>
+                <p class="w-full">Please login with your account ID.</p>
+
+                <p class="w-full">
+                    By continuing, you agree to the terms of use.
+                </p>
+            </div>
+
+            <form
+                class="card more_padding secondary round w-full flex flex-col gap-2"
+                action="{{ base.starstraw }}/return"
+                id="login-user"
+            >
+                <label for="uid"><b>Account ID</b></label>
+
+                <input
+                    type="text"
+                    name="uid"
+                    id="uid"
+                    placeholder="00000000-0000-0000-0000-000000000000"
+                    class="w-full round"
+                    required="true"
+                    minlength="36"
+                    maxlength="36"
+                />
+
+                <hr />
+
+                <button class="theme:primary w-full round">
+                    Login
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-arrow-right"
+                        aria-label="Right arrow symbol"
+                    >
+                        <path d="M5 12h14" />
+                        <path d="m12 5 7 7-7 7" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <div class="footernav w-full justify-center">
+            <div class="item">
+                <a href="/">Homepage</a>
+            </div>
+
+            <div class="item">
+                <a
+                    href="{{ base.starstraw }}/spirit/register?callback={{ callback }}"
+                >
+                    Register
+                </a>
+            </div>
+        </div>
+
+        <!-- prettier-ignore -->
+        <script type="text/plain" style="display: none" id="callback">{{ callback }}</script>
+
+        <script>
+            use("starstraw", (mod) => {
+                mod.render_login(
+                    document.getElementById("login-user"),
+                    document.getElementById("callback").innerText,
+                );
+            });
+        </script>
+    </main>
+</div>
+{% call super() %} {% endblock %}

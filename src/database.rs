@@ -35,7 +35,7 @@ impl Default for ServerOptions {
 #[derive(Clone)]
 pub struct Database {
     pub base: dorsal::StarterDatabase,
-    pub auth: dorsal::AuthDatabase,
+    pub auth: starstraw::Database,
     pub config: ServerOptions,
 }
 
@@ -45,13 +45,11 @@ impl Database {
         database_options: dorsal::DatabaseOpts,
         server_options: ServerOptions,
     ) -> Self {
-        let base = dorsal::StarterDatabase::new(database_options).await;
-
         Self {
-            base: base.clone(),
-            auth: dorsal::AuthDatabase::new(
-                base,
-                dorsal::db::special::auth_db::DatabaseOptions::default(),
+            base: dorsal::StarterDatabase::new(database_options).await,
+            auth: starstraw::Database::new(
+                starstraw::Database::env_options(),
+                starstraw::ServerOptions::truthy(),
             )
             .await,
             config: server_options,

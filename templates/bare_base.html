@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+    {% let base = crate::base::BaseStore::new() %}
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <meta
+            http-equiv="content-security-policy"
+            content="default-src 'self' blob:; img-src * data:; media-src *; font-src *; style-src 'unsafe-inline' 'self' blob: *; script-src 'self' 'unsafe-inline' blob: *; object-src 'self' blob: *; upgrade-insecure-requests; connect-src *; frame-src 'self' blob: data: *"
+        />
+
+        <title>{% block title %}{{ title }}{% endblock %}</title>
+
+        <meta name="theme-color" content="#6ee7b7" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="{{ base.site_name }}" />
+
+        <link rel="icon" href="/static/favicon.svg" />
+
+        {% block head %}{% endblock %}
+
+        <link rel="stylesheet" href="{{ base.static_dir }}/style.css" />
+
+        <!-- prefer default user color theme -->
+        <script>
+            if (
+                window.matchMedia("(prefers-color-scheme: dark)").matches &&
+                !window.localStorage.getItem("theme")
+            ) {
+                document.documentElement.classList.add("dark");
+                window.localStorage.setItem("theme", "dark");
+            } else if (
+                window.matchMedia("(prefers-color-scheme: light)").matches &&
+                !window.localStorage.getItem("theme")
+            ) {
+                document.documentElement.classList.remove("dark");
+                window.localStorage.setItem("theme", "light");
+            } else if (window.localStorage.getItem("theme")) {
+                /* restore theme */
+                const current = window.localStorage.getItem("theme");
+                document.documentElement.className = current;
+            }
+        </script>
+
+        <!-- ... -->
+        <script>
+            globalThis.ns_config = { root: "{{ base.static_dir }}/js/" };
+            globalThis._app_base = {
+                ns_store: {}, // global page functions
+                starstraw: "{{ base.starstraw }}",
+                nested: "{{ base.nested }}",
+            };
+        </script>
+    </head>
+
+    <body>
+        <script src="https://unpkg.com/regns@1.0.0/index.js"></script>
+
+        <!-- page content -->
+        <div class="toolbar-layout-wrapper" id="_page">
+            {% block content %}{% endblock %}
+        </div>
+
+        <script src="{{ base.static_dir }}/js/footer.js"></script>
+        {{ base.body_embed|safe }}
+    </body>
+</html>

@@ -100,7 +100,7 @@ a.button.blue {
 /* typography */
 p,
 span {
-    @apply break-all text-wrap max-w-full;
+    @apply break-words text-wrap max-w-full;
 }
 
 a,

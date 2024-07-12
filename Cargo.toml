@@ -4,7 +4,7 @@ description = "Intelligent Dorsal admin interface"
 authors = ["hkau"]
 license = "MIT"
 
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 
 documentation = "https://docs.rs/pongo"
@@ -37,3 +37,4 @@ dotenv = "0.15.0"
 axum-extra = { version = "0.9.3", features = ["cookie"] }
 askama = { version = "0.12.1", features = ["with-axum"] }
 askama_axum = "0.4.0"
+starstraw = { version = "0.1.0", default-features = false }

@@ -5,7 +5,7 @@ use dorsal::DefaultReturn;
 
 use axum::response::IntoResponse;
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, State},
     routing::{get, post},
     Json, Router,
 };
@@ -22,8 +22,8 @@ pub fn routes(database: Database) -> Router {
         .route("/redis/delete", post(redis_delete_request))
         .route("/redis/insert", post(redis_insert_request))
         // auth
-        .route("/auth/callback", get(callback_request))
-        .route("/auth/logout", get(logout_request))
+        .route("/auth/callback", get(starstraw::api::callback_request))
+        .route("/auth/logout", get(starstraw::api::logout_request))
         // ...
         .with_state(database)
 }
@@ -46,7 +46,7 @@ pub async fn fetch_all_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_user_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
             Ok(ua) => ua,
@@ -68,10 +68,8 @@ pub async fn fetch_all_request(
     };
 
     // check permissions
-    if !auth_user
-        .level
-        .permissions
-        .contains(&"StaffDashboard".to_string())
+    if !starstraw::model::SkillManager(auth_user.skills)
+        .has_skill(starstraw::model::SkillName::Absolute)
     {
         return Json(DefaultReturn {
             success: false,
@@ -110,7 +108,7 @@ pub async fn execute_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_user_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
             Ok(ua) => ua,
@@ -132,10 +130,8 @@ pub async fn execute_request(
     };
 
     // check permissions
-    if !auth_user
-        .level
-        .permissions
-        .contains(&"StaffDashboard".to_string())
+    if !starstraw::model::SkillManager(auth_user.skills)
+        .has_skill(starstraw::model::SkillName::Absolute)
     {
         return Json(DefaultReturn {
             success: false,
@@ -185,7 +181,7 @@ pub async fn redis_get_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_user_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
             Ok(ua) => ua,
@@ -207,10 +203,8 @@ pub async fn redis_get_request(
     };
 
     // check permissions
-    if !auth_user
-        .level
-        .permissions
-        .contains(&"StaffDashboard".to_string())
+    if !starstraw::model::SkillManager(auth_user.skills)
+        .has_skill(starstraw::model::SkillName::Absolute)
     {
         return Json(DefaultReturn {
             success: false,
@@ -243,7 +237,7 @@ pub async fn redis_delete_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_user_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
             Ok(ua) => ua,
@@ -265,10 +259,8 @@ pub async fn redis_delete_request(
     };
 
     // check permissions
-    if !auth_user
-        .level
-        .permissions
-        .contains(&"StaffDashboard".to_string())
+    if !starstraw::model::SkillManager(auth_user.skills)
+        .has_skill(starstraw::model::SkillName::Absolute)
     {
         return Json(DefaultReturn {
             success: false,
@@ -301,7 +293,7 @@ pub async fn redis_insert_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_user_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
             Ok(ua) => ua,
@@ -323,10 +315,8 @@ pub async fn redis_insert_request(
     };
 
     // check permissions
-    if !auth_user
-        .level
-        .permissions
-        .contains(&"StaffDashboard".to_string())
+    if !starstraw::model::SkillManager(auth_user.skills)
+        .has_skill(starstraw::model::SkillName::Absolute)
     {
         return Json(DefaultReturn {
             success: false,
@@ -359,55 +349,4 @@ pub async fn not_found() -> impl IntoResponse {
         message: String::from("Path does not exist"),
         payload: 404,
     })
-}
-
-// auth
-#[derive(serde::Deserialize)]
-pub struct CallbackQueryProps {
-    pub uid: String, // this uid will need to be sent to the client as a token
-}
-
-pub async fn callback_request(Query(params): Query<CallbackQueryProps>) -> impl IntoResponse {
-    // return
-    (
-        [
-            ("Content-Type".to_string(), "text/html".to_string()),
-            (
-                "Set-Cookie".to_string(),
-                format!(
-                    "__Secure-Token={}; SameSite=Lax; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age={}",
-                    params.uid,
-                    60 * 60 * 24 * 365
-                ),
-            ),
-        ],
-        "<head>
-            <meta http-equiv=\"Refresh\" content=\"0; URL=/\" />
-        </head>"
-    )
-}
-
-pub async fn logout_request(jar: CookieJar) -> impl IntoResponse {
-    // check for cookie
-    if let Some(_) = jar.get("__Secure-Token") {
-        return (
-            [
-                ("Content-Type".to_string(), "text/plain".to_string()),
-                (
-                    "Set-Cookie".to_string(),
-                   "__Secure-Token=refresh; SameSite=Strict; Secure; Path=/; HostOnly=true; HttpOnly=true; Max-Age=0".to_string(),
-                ),
-            ],
-            "You have been signed out. You can now close this tab.",
-        );
-    }
-
-    // return
-    (
-        [
-            ("Content-Type".to_string(), "text/plain".to_string()),
-            ("Set-Cookit".to_string(), String::new()),
-        ],
-        "Failed to sign out of account.",
-    )
 }

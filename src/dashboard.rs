@@ -6,9 +6,9 @@ use axum::{
     Router,
 };
 use axum_extra::extract::cookie::CookieJar;
+use starstraw::model::Profile;
 
 use crate::Database;
-use dorsal::db::special::auth_db::{FullUser, UserMetadata};
 
 pub fn routes(database: Database) -> Router {
     Router::new()
@@ -22,7 +22,7 @@ pub fn routes(database: Database) -> Router {
 #[derive(Template)]
 #[template(path = "homepage.html")]
 struct HomepageTemplate {
-    me: FullUser<UserMetadata>,
+    me: Profile,
     auth_state: bool,
 }
 
@@ -40,7 +40,7 @@ pub async fn homepage_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_user_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
             Ok(ua) => ua,
@@ -54,10 +54,8 @@ pub async fn homepage_request(
     };
 
     // check permissions
-    if !auth_user
-        .level
-        .permissions
-        .contains(&"StaffDashboard".to_string())
+    if !starstraw::model::SkillManager(auth_user.skills.clone())
+        .has_skill(starstraw::model::SkillName::Absolute)
     {
         return Html(AuthPickerTemplate { auth_state: false }.render().unwrap());
     }
@@ -76,7 +74,7 @@ pub async fn homepage_request(
 #[derive(Template)]
 #[template(path = "table.html")]
 struct TableViewTemplate {
-    me: FullUser<UserMetadata>,
+    me: Profile,
     auth_state: bool,
     name: String,
 }
@@ -90,7 +88,7 @@ pub async fn table_view_request(
     let auth_user = match jar.get("__Secure-Token") {
         Some(c) => match database
             .auth
-            .get_user_by_unhashed(c.value_trimmed().to_string())
+            .get_profile_by_unhashed(c.value_trimmed().to_string())
             .await
         {
             Ok(ua) => ua,
@@ -104,10 +102,8 @@ pub async fn table_view_request(
     };
 
     // check permissions
-    if !auth_user
-        .level
-        .permissions
-        .contains(&"StaffDashboard".to_string())
+    if !starstraw::model::SkillManager(auth_user.skills.clone())
+        .has_skill(starstraw::model::SkillName::Absolute)
     {
         return Html(AuthPickerTemplate { auth_state: false }.render().unwrap());
     }
